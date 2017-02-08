@@ -13,14 +13,14 @@ from datetime import datetime,timedelta
 # dimensions of our images.
 img_width, img_height = 150, 150
 
-train_data_dir = '/Users/davidsutton/Downloads/kaggle/train'
-validation_data_dir = '/Users/davidsutton/Downloads/kaggle/val'
+train_data_dir = '/home/ubuntu/data/train' #'/Users/davidsutton/Downloads/kaggle/train'
+validation_data_dir = '/home/ubuntu/data/val' #'/Users/davidsutton/Downloads/kaggle/val'
 nb_train_samples = 21999
 nb_validation_samples = 3001
-nb_epoch = 1
-l2_lam= 0.2
+nb_epoch  = 50
+l2_lam= 0.4
 
-weights_fname= '/Users/davidsutton/Downloads/kaggle/vgg16_weights.h5'
+weights_fname= '/home/ubuntu/vgg16_weights.h5' #'/Users/davidsutton/Downloads/kaggle/vgg16_weights.h5'
 
 #with tf.device('/gpu:0'):
 
@@ -102,10 +102,11 @@ def create_bottleneck_features(model,train_data_dir,validation_data_dir):
 
 
 def build_top_model():
+
     
     # My little network
     model = Sequential()
-    model.add(Convolution2D(32, 3, 3, input_shape= train_data.shape[1:])) #(3, img_width, img_height)))
+    model.add(Convolution2D(32, 3, 3, input_shape= (512,4,4))) #train_data.shape[1:])) #(3, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(ZeroPadding2D((1, 1)))
     model.add(Convolution2D(32, 3, 3, ))
@@ -183,7 +184,7 @@ def fine_tune(vgg,top_model):
                       validation_data=validation_generator,
                       nb_val_samples=nb_validation_samples)
                                                         
-    vgg.save_weights('final_model.hd5')
+    vgg.save_weights('final_model_30.hd5')
     return vgg
 
 
@@ -197,18 +198,18 @@ if __name__ == '__main__':
 #    create_bottleneck_features(vgg,train_data_dir,validation_data_dir)
 
     print 'prepping data',(datetime.now() - tc).total_seconds()
-    train_data= np.load(open('/Users/davidsutton/Downloads/kaggle/bottleneck_features_train.npy','r'))
-    train_labels= np.concatenate( (np.zeros(len( glob.glob(train_data_dir+'/cats/*.jpg') )),
-                                   np.zeros(len( glob.glob(train_data_dir+'/dogs/*.jpg') ))+1) )
-
-    val_data= np.load(open('/Users/davidsutton/Downloads/kaggle/bottleneck_features_validation.npy','r'))
-    val_labels = np.concatenate( (np.zeros(len( glob.glob(validation_data_dir+'/cats/*.jpg') )),
-                                  np.zeros(len( glob.glob(validation_data_dir+'/dogs/*.jpg') ))+1) )
+#    train_data= np.load(open('/Users/davidsutton/Downloads/kaggle/bottleneck_features_train.npy','r'))
+#    train_labels= np.concatenate( (np.zeros(len( glob.glob(train_data_dir+'/cats/*.jpg') )),
+#                                   np.zeros(len( glob.glob(train_data_dir+'/dogs/*.jpg') ))+1) )
+#
+#    val_data= np.load(open('/Users/davidsutton/Downloads/kaggle/bottleneck_features_validation.npy','r'))
+#    val_labels = np.concatenate( (np.zeros(len( glob.glob(validation_data_dir+'/cats/*.jpg') )),
+#                                  np.zeros(len( glob.glob(validation_data_dir+'/dogs/*.jpg') ))+1) )
 
     print 'build and fit a top model'
     top_model= build_top_model()
 #    top_model= fit_top_model(top_model)
-    top_model.load_weights('weights_vgg1.hd5')
+    top_model.load_weights('/home/ubuntu/weights_vgg1.hd5')
 
     print 'fine-tuning...'
     vgg= fine_tune(vgg,top_model)
